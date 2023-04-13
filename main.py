@@ -1,5 +1,7 @@
 import pandas
+import pyautogui
 import matplotlib.pyplot as plt
+import tkinter as tk
 from tabulate import tabulate
 
 caminho = './Estoque Almoxarifado.xlsx'
@@ -61,9 +63,9 @@ while op != 6:
                     propB += 1
                 elif classificacao[i] == 'C':
                     propC += 1
-            print(f"{(propA / total):.2%}")
-            print(f"{(propB / total):.2%}")
-            print(f"{(propC / total):.2%}")
+            print(f"A {(propA / total):.2%}")
+            print(f"B {(propB / total):.2%}")
+            print(f"C {(propC / total):.2%}")
         case 3:
             propA = 0
             propB = 0
@@ -75,15 +77,28 @@ while op != 6:
                     propB += individual[i]
                 elif classificacao[i] == 'C':
                     propC += individual[i]
-            print(f"{propA:.2%}")
-            print(f"{propB:.2%}")
-            print(f"{propC:.2%}")
+            print(f"A {propA:.2%}")
+            print(f"B {propB:.2%}")
+            print(f"C {propC:.2%}")
         case 4:
-            for i in range(10):
-                print(f"{material[i]} {quantidade[i]} {preco[i]} {valorTotal[i]:.2} {(individual[i]):.7%} {acumulada[i]:.7%} {classificacao[i]}")
+            dados = []
+            root = tk.Tk()
+            #print(f"{material[i]} {quantidade[i]} {preco[i]} {valorTotal[i]:.2} {(individual[i]):.7%} {acumulada[i]:.7%} {classificacao[i]}")
+            root.title("Tabela")                
+            for i in range(len(tabela)):
+                dados.append([material, quantidade, preco, valorTotal, individual, acumulada, classificacao])
+            #for i in range(len(dados)):
+             #   for j in range(len(dados[i])):
+              #      label = tk.Label(root, text=dados[i][j], relief="solid")
+               #     label.grid(row=i, column=j, padx=5, pady=5)
+            #root.mainloop()
+            print(dados)
         case 5:
-            plt.bar(len(material), acumulada)
+            plt.plot(acumulada)
             plt.show()
+            #plt.bar(len(tabela), individual)
+            #plt.show()
+        case 6:
+            break
         case _:
-            if op != 6:
-                print("Opção Invalida")
+            print("Opção Invalida")
