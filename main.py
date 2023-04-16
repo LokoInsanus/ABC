@@ -1,10 +1,11 @@
 import pandas
-import pyautogui
 import matplotlib.pyplot as plt
-import tkinter as tk
 from tabulate import tabulate
+import subprocess
 
-caminho = './Estoque Almoxarifado.xlsx'
+#caminho = './Estoque Almoxarifado.xlsx'
+caminho = input("Digite o nome do arquivo: ")
+caminho += ".xlsx"
 tabela = pandas.read_excel(caminho)
 material = tabela['Material'].tolist()
 quantidade = tabela['Quantidade'].tolist()
@@ -28,8 +29,35 @@ def calcularClassificacao():
         else:
             classificacao.append('C')
 
-# caminho = input("Digite o nome do arquivo: ")
-# caminho += ".xlsx"
+def propSKU():
+    propA = 0
+    propB = 0
+    propC = 0
+    total = len(tabela)
+    for i in range(total):
+        if classificacao[i] == 'A':
+            propA += 1
+        elif classificacao[i] == 'B':
+            propB += 1
+        elif classificacao[i] == 'C':
+            propC += 1
+    propA /= total
+    propB /= total
+    propC /= total
+    return propA, propB, propC
+
+def propValor():
+    propA = 0
+    propB = 0
+    propC = 0
+    for i in range(len(tabela)):
+        if classificacao[i] == 'A':
+            propA += individual[i]
+        elif classificacao[i] == 'B':
+            propB += individual[i]
+        elif classificacao[i] == 'C':
+            propC += individual[i]
+    return propA, propB, propC
 
 for i in range(len(tabela)):
     total += valorTotal[i]
@@ -42,8 +70,8 @@ for i in range(len(tabela)):
         acumulada.append(acumulada[i - 1] + individual[i])
 calcularClassificacao()
 
-while op != 6:
-    op = int(input("1 - Modificar Corte\n2 - Proporção de SKUs\n3 - Proporção de Valor\n4 - Imprimir Tabela\n5 - Gerar Grafico\n6 - Sair\nEscolha uma das opções acima: "))
+while op != 7:
+    op = int(input("1 - Modificar Corte\n2 - Proporção de SKUs\n3 - Proporção de Valor\n4 - Imprimir Tabela\n5 - Gerar Grafico\n6 - Exportar Tabela\n7 - Sair\nEscolha uma das opções acima: "))
     match op:
         case 1:
             classificacao = []
@@ -52,53 +80,62 @@ while op != 6:
             corte[2] = float(input("Corte C: ")) / 100
             calcularClassificacao()
         case 2:
-            propA = 0
-            propB = 0
-            propC = 0
-            total = len(tabela)
-            for i in range(total):
-                if classificacao[i] == 'A':
-                    propA += 1
-                elif classificacao[i] == 'B':
-                    propB += 1
-                elif classificacao[i] == 'C':
-                    propC += 1
-            print(f"A {(propA / total):.2%}")
-            print(f"B {(propB / total):.2%}")
-            print(f"C {(propC / total):.2%}")
+            a, b, c = propSKU()
+            print(f"A: {a:.2%}\nB: {b:.2%}\nC: {c:.2%}")
         case 3:
-            propA = 0
-            propB = 0
-            propC = 0
-            for i in range(len(tabela)):
-                if classificacao[i] == 'A':
-                    propA += individual[i]
-                elif classificacao[i] == 'B':
-                    propB += individual[i]
-                elif classificacao[i] == 'C':
-                    propC += individual[i]
-            print(f"A {propA:.2%}")
-            print(f"B {propB:.2%}")
-            print(f"C {propC:.2%}")
+            a, b, c = propValor()
+            print(f"A: {a:.2%}\nB: {b:.2%}\nC: {c:.2%}")
         case 4:
-            dados = []
-            root = tk.Tk()
-            #print(f"{material[i]} {quantidade[i]} {preco[i]} {valorTotal[i]:.2} {(individual[i]):.7%} {acumulada[i]:.7%} {classificacao[i]}")
-            root.title("Tabela")                
-            for i in range(len(tabela)):
-                dados.append([material, quantidade, preco, valorTotal, individual, acumulada, classificacao])
-            #for i in range(len(dados)):
-             #   for j in range(len(dados[i])):
-              #      label = tk.Label(root, text=dados[i][j], relief="solid")
-               #     label.grid(row=i, column=j, padx=5, pady=5)
-            #root.mainloop()
-            print(dados)
+            print("Digite um intevalo para mostra os dados, sendo no máximo 1000")
+            primeiro = int(input("Primeiro intervalo: "))
+            segundo = int(input("Segundo intervalo: "))
+            if segundo - primeiro <= 1000:
+                for i in range(primeiro - 1, segundo):
+                    print(f"{material[i]} {quantidade[i]} {preco[i]} {valorTotal[i]:.2%} {(individual[i]):.7%} {acumulada[i]:.7%} {classificacao[i]}")
+            else:
+                print(f"\nA diferença entre {primeiro} e {segundo} é de {segundo - primeiro} que é maior que 1000\n")
         case 5:
             plt.plot(acumulada)
             plt.show()
             #plt.bar(len(tabela), individual)
             #plt.show()
         case 6:
+            abc = ['A', 'B', 'C']
+            skus = propSKU()
+            valor = propValor()
+            listaCortes = [f'{corte[0]:.2%}', f'{corte[1]:.2%}', f'{corte[2]:.2%}']
+            listaSKUs = [f'{skus[0]:.2%}', f'{skus[1]:.2%}', f'{skus[2]:.2%}']
+            listaValores = [f'{valor[0]:.2%}', f'{valor[1]:.2%}', f'{valor[2]:.2%}']
+            for i in range(len(individual)):
+                individual[i] = f"{individual[i]:.2%}"
+            for i in range(len(acumulada)):
+                acumulada[i] = f"{acumulada[i]:.2%}"
+            while len(listaCortes) != len(material):
+                listaCortes.append('')
+                listaSKUs.append('')
+                listaValores.append('')
+                abc.append('')
+            data = {'Material': material,
+                    'Quantidade': quantidade,
+                    'Preço': preco,
+                    'Valor Total': valorTotal,
+                    'Individual': individual,
+                    'Acumulada': acumulada,
+                    'Classificação': classificacao,
+                    '': '',
+                    'Classificaçao': abc,
+                    'Corte: ': listaCortes,
+                    'Proporção de SKUs': listaSKUs,
+                    'Proporção de Valor': listaValores
+                    }
+            nome = input("Digite o nome do Arquivo: ")
+            tabela = pandas.DataFrame(data)
+            tabela.to_excel(f'{nome}.xlsx', index = False)
+            abrir = input("Quer abrir o arquivo[s/n]? ")
+            if abrir == 's' or abrir == 'S':
+                comando = ['cmd', '/c', 'start', '', f'./{nome}.xlsx']
+                subprocess.run(comando, check=True)
+        case 7:
             break
         case _:
             print("Opção Invalida")
