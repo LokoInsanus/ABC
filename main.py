@@ -17,10 +17,7 @@ while True:
     break
   else:
     print("Arquivo não existe")
-
-#Eliminar Repetidos
-#eliminarRepetidos(tabela, material, quantidade, preco, valorTotal)
-
+    
 #Cacular
 total = calcularTotal(valorTotal)
 individual = calcularIndividual(valorTotal, total)
@@ -67,9 +64,13 @@ while True:
       tabela.style.set_properties(**{'font-family': 'Arial', 'color': 'blue'})
       nome = input("Digite o nome do Arquivo: ")
       tabela.to_excel(f'{nome}.xlsx', index = False)
+      configurarTabela(nome, len(tabela))
       abrir = input("Quer abrir o arquivo[s/n]? ")
       if abrir == 's' or abrir == 'S':
-        comando = ['cmd', '/c', 'start', '', f'./{nome}.xlsx']
+        if os.name == "nt":
+          comando = ['cmd', '/c', 'start', '', f'./{nome}.xlsx']
+        elif os.name == "posix":
+          comando = ['libreoffice', "--calc", f'./{nome}.xlsx']
         subprocess.run(comando, check=True)
     case 7:
       break

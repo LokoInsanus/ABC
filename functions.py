@@ -1,10 +1,8 @@
 import os
+import openpyxl
+import openpyxl.styles as styles
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
-
-def eliminarRepetidos(tabela, material, quantidade, preco, valorTotal):
-  duplicatas = tabela['Material'][tabela['Material'].duplicated(keep=False)]
-  print(duplicatas.index)
 
 def calcularTotal(valorTotal):
   total = 0
@@ -73,13 +71,21 @@ def propValor(classificacao, individual):
 def gerarGraficos(individual, acumulada):
   fig, grafico = plt.subplots()
   op = int(input("1 - Individual\n2 - Acumulada\nEscolha uma das opções acimea: "))
+  #grafico.yaxis.set_major_formatter(FormatStrFormatter('%d'))
   match op:
     case 1:
+      individualPorcentagem = []
       listaTotal = [i for i in range(0, len(individual))]
-      #grafico.yaxis.set_major_formatter(FormatStrFormatter('%d'))
-      grafico.bar(listaTotal, individual)
+      for i in individual:
+        individualPorcentagem.append(i * 100)
+      grafico.bar(listaTotal, individualPorcentagem)
+      media = acharMedia(individualPorcentagem)
+      grafico.set_ylim(0, media)
     case 2:
-      grafico.plot(acumulada)
+      acumuladaPorcentagem = []
+      for i in acumulada:
+        acumuladaPorcentagem.append(i * 100)
+      grafico.plot(acumuladaPorcentagem)
     case _:
       print("Opção invalida")
   #fig.tight_layout()
@@ -110,14 +116,46 @@ def gerarTabela(individual, acumulada, classificacao, corte, material, quantidad
           'Classificação': classificacao,
           '': '',
           'Classificaçao': abc,
-          'Corte: ': listaCortes,
+          'Corte': listaCortes,
           'Proporção de SKUs': listaSKUs,
           'Proporção de Valor': listaValores
           }
   return dados
+
+def configurarTabela(nome, tamanho):
+  planilha = openpyxl.load_workbook(f'{nome}.xlsx')
+  tabela = planilha['Sheet1']
+  tabela.column_dimensions['A'].width = 50
+  tabela.column_dimensions['B'].width = 15
+  tabela.column_dimensions['C'].width = 15
+  tabela.column_dimensions['D'].width = 15
+  tabela.column_dimensions['E'].width = 15
+  tabela.column_dimensions['F'].width = 15
+  tabela.column_dimensions['G'].width = 15
+  tabela.column_dimensions['I'].width = 15
+  tabela.column_dimensions['J'].width = 10
+  tabela.column_dimensions['K'].width = 20
+  tabela.column_dimensions['L'].width = 20
+  tabela['H1'].border = styles.Border(left=styles.Side(border_style='thin'), right=styles.Side(border_style='thin'))
+  #tabela[f'C2:D{tamanho}'].number_format = styles.NumberFormat('$#,##0.00')
+  alinhamento = styles.Alignment(horizontal='center', vertical='center')
+  intervalo = tabela[f'B2:G{tamanho}']
+  for linha in intervalo:
+    for célula in linha:
+      célula.alignment = alinhamento
+  intervalo = tabela['I2:L5']
+  for linha in intervalo:
+    for célula in linha:
+      célula.alignment = alinhamento
+  planilha.save(f'{nome}.xlsx')
+  planilha.close()
 
 def apagarTela():
   if os.name == "posix":
     os.system('clear')
   elif os.name == "nt":
     os.system('cls')
+
+def acharMedia(lista):
+  media = sum(lista)
+  return media / len(lista)
