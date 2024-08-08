@@ -139,7 +139,7 @@ def configurarTabela(nome, tamanho):
   tabela['H1'].border = styles.Border(left=styles.Side(border_style='thin'), right=styles.Side(border_style='thin'))
   #tabela[f'C2:D{tamanho}'].number_format = styles.NumberFormat('$#,##0.00')
   alinhamento = styles.Alignment(horizontal='center', vertical='center')
-  intervalo = tabela[f'B2:G{tamanho}']
+  intervalo = tabela[f'B2:G{tamanho + 1}']
   for linha in intervalo:
     for célula in linha:
       célula.alignment = alinhamento
